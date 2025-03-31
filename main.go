@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"net/http"
 	"strings"
 )
-import "net/http"
+
+var router = mux.NewRouter()
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<h1>Hello! 欢迎来到 go-cms</h1>")
@@ -34,7 +36,22 @@ func articlesIndexHandler(w http.ResponseWriter, r *http.Request) {
 
 // 文章创建页
 func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "<h1>文章创建页</h1>\n")
+	html := `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>创建文章 —— 我的技术博客</title>
+</head>
+<body>
+    <form action="%s" method="post">
+        <p><input type="text" name="title"></p>
+        <p><textarea name="body" cols="30" rows="10"></textarea></p>
+        <p><button type="submit">提交</button></p>
+    </form>
+</body>
+</html>`
+
+	storeURL, _ := router.Get("articles.store").URL()
+	fmt.Fprintf(w, html, storeURL)
 }
 
 // 文章更新
@@ -72,9 +89,10 @@ func removeTrailingSlash(next http.Handler) http.Handler {
 	})
 }
 
+// 核心方法
 func main() {
-	//router := http.NewServeMux()
-	router := mux.NewRouter().StrictSlash(true)
+
+	router.StrictSlash(true)
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
 	router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
 
