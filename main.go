@@ -5,6 +5,7 @@ import "net/http"
 
 func handleFunc(w http.ResponseWriter, r *http.Request) {
 	//fmt.Fprint(w, "请求路径为："+r.URL.Path+"\n")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if r.URL.Path == "/about" {
 		fmt.Fprint(w, "<h1>About</h1>")
 	} else if r.URL.Path == "/login" {
@@ -12,7 +13,7 @@ func handleFunc(w http.ResponseWriter, r *http.Request) {
 	} else if r.URL.Path == "/" {
 		fmt.Fprint(w, "<h1>Hello My Go Cms</h1>\n")
 	} else {
-		fmt.Fprint(w, "<h1>页面未找到，请联系我们not found</h1>\n")
+		fmt.Fprint(w, "<h1>页面未找到，请联系我们</h1>\n"+"<a href='mailto:yulinzhihou@163.com'>yulinzhihou@163.com</a>\n")
 	}
 }
 
