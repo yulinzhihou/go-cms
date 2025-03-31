@@ -42,7 +42,7 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
     <title>创建文章 —— 我的技术博客</title>
 </head>
 <body>
-    <form action="%s" method="post">
+    <form action="%s?test=data" method="post">
         <p><input type="text" name="title"></p>
         <p><textarea name="body" cols="30" rows="10"></textarea></p>
         <p><button type="submit">提交</button></p>
@@ -66,7 +66,24 @@ func articlesDeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 // 文件保存
 func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "<h1>文件保存</h1>\n")
+	err := r.ParseForm()
+	if err != nil {
+		// 解析错误
+		fmt.Fprint(w, "请提供正确的数据")
+		return
+	}
+
+	title := r.PostForm.Get("title")
+	body := r.PostForm.Get("body")
+
+	fmt.Fprintf(w, "post postform : %v <br>", r.PostForm)
+	fmt.Fprintf(w, "title Form : %v <br>", r.Form)
+	fmt.Fprintf(w, "body Form : %v <br>", body)
+	fmt.Fprintf(w, "title Form : %v <br>", title)
+
+	fmt.Fprintf(w, "body Form title : %v <br>", r.FormValue("title"))
+	fmt.Fprintf(w, "body PostForm title: %v <br>", r.PostFormValue("title"))
+
 }
 
 // 中间件
