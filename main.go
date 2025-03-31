@@ -1,17 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 import "net/http"
 
-func handleFunc(w http.ResponseWriter, r *http.Request) {
-	//fmt.Fprint(w, "请求路径为："+r.URL.Path+"\n")
+func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if r.URL.Path == "/about" {
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, "<h1>About</h1>")
-	} else if r.URL.Path == "/login" {
-		fmt.Fprint(w, "<h1>Login</h1>\n")
-	} else if r.URL.Path == "/" {
+	if r.URL.Path == "/" {
 		fmt.Fprint(w, "<h1>Hello My Go Cms</h1>\n")
 	} else {
 		w.WriteHeader(http.StatusNotFound)
@@ -19,7 +16,23 @@ func handleFunc(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func aboutHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if r.URL.Path == "/about" {
+		fmt.Fprint(w, "<h1>About</h1>\n")
+	}
+}
+
 func main() {
-	http.HandleFunc("/", handleFunc)
-	http.ListenAndServe(":8081", nil)
+	router := http.NewServeMux()
+	router.HandleFunc("/", defaultHandler)
+	router.HandleFunc("/about", aboutHandler)
+
+	// 文章详情
+	router.HandleFunc("/articles/", func(writer http.ResponseWriter, request *http.Request) {
+		id := strings.SplitN(request.URL.Path, "/", 3)[2]
+		fmt.Fprint(writer, "<h1>文章详情id：</h1>\n", id)
+	})
+
+	http.ListenAndServe(":8081", router)
 }
