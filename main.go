@@ -107,6 +107,26 @@ func getArticleByID(id string) (Article, error) {
 	return article, err
 }
 
+// 表彰验证
+func validateArticleFormData(title string, body string) map[string]string {
+	errors := make(map[string]string)
+	// 验证标题
+	if title == "" {
+		errors["title"] = "标题不能为空"
+	} else if utf8.RuneCountInString(title) < 3 || utf8.RuneCountInString(title) > 20 {
+		errors["title"] = "标题需长度需介于 3~20"
+	}
+
+	// 验证内容
+	if body == "" {
+		errors["body"] = "内容不能为空"
+	} else if utf8.RuneCountInString(body) < 10 || utf8.RuneCountInString(body) > 40 {
+		errors["body"] = "内容长度需介于 10~40"
+	}
+
+	return errors
+}
+
 // ArticlesFormData 创建文章表单数据
 type ArticleFormData struct {
 	Title  string
@@ -245,19 +265,7 @@ func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		title := r.FormValue("title")
 		body := r.FormValue("body")
 		// 验证字段
-		errors := make(map[string]string)
-		if title == "" {
-			errors["title"] = "标题不能为空"
-		} else if utf8.RuneCountInString(title) < 3 || utf8.RuneCountInString(title) > 10 {
-			errors["title"] = "标题长度需介于 3 ~ 10 字符之间 "
-		}
-
-		if body == "" {
-			errors["body"] = "内容不能为空"
-		} else if utf8.RuneCountInString(body) < 10 || utf8.RuneCountInString(body) > 20 {
-			errors["body"] = "内容长度需介于 10 ~ 20 字符之间"
-		}
-
+		errors := validateArticleFormData(title, body)
 		// 验证内容
 		if len(errors) == 0 {
 			query := `UPDATE articles SET title=?, body=? WHERE id=?`
@@ -309,30 +317,18 @@ func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// 定义错误日志
-	errors := make(map[string]string)
-
 	title := r.FormValue("title")
 	body := r.FormValue("body")
 
 	// 验证表单数据
-	if title == "" {
-		errors["title"] = "标题不能为空"
-	} else if len(title) < 3 || len(title) > 100 {
-		errors["title"] = "标题长度只能介于3-100个字符之间"
-	}
-
-	if body == "" {
-		errors["body"] = "内容不能为空"
-	} else if len(body) < 10 || len(body) > 255 {
-		errors["body"] = "内容长度只能在10-255之间"
-	}
+	errors := validateArticleFormData(title, body)
 
 	if len(errors) == 0 {
-		fmt.Fprint(w, "验证成功！<br>")
-		fmt.Fprintf(w, "title 的值为：%v <br>", title)
-		fmt.Fprintf(w, "title 的长度为: %d <br> ", utf8.RuneCountInString(title))
-		fmt.Fprintf(w, "body 的值为：%v <br> ", body)
-		fmt.Fprintf(w, "body 的长度为：%d <br> ", utf8.RuneCountInString(body))
+		//fmt.Fprint(w, "验证成功！<br>")
+		//fmt.Fprintf(w, "title 的值为：%v <br>", title)
+		//fmt.Fprintf(w, "title 的长度为: %d <br> ", utf8.RuneCountInString(title))
+		//fmt.Fprintf(w, "body 的值为：%v <br> ", body)
+		//fmt.Fprintf(w, "body 的长度为：%d <br> ", utf8.RuneCountInString(body))
 		lastInsertID, err := saveArticleToDB(title, body)
 		if lastInsertID > 0 {
 			fmt.Fprint(w, "插入成功，ID 为 "+strconv.FormatInt(lastInsertID, 10))
