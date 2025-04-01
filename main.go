@@ -127,6 +127,16 @@ func validateArticleFormData(title string, body string) map[string]string {
 	return errors
 }
 
+// Link 方法来生成文章链接
+func (a Article) Link() string {
+	showURL, err := router.Get("articles.show").URL("id", strconv.FormatUint(uint64(a.ID), 10))
+	if err != nil {
+		checkError(err)
+		return ""
+	}
+	return showURL.String()
+}
+
 // ArticlesFormData 创建文章表单数据
 type ArticleFormData struct {
 	Title  string
@@ -185,7 +195,30 @@ func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
 
 // 文章列表页
 func articlesIndexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "<h1>文章列表页</h1>\n")
+	// 1.执行查询语句，返回一个结果集
+	rows, err := db.Query("SELECT * FROM articles")
+	checkError(err)
+	defer rows.Close()
+
+	var articles []Article
+	// 循环取结果
+	for rows.Next() {
+		var article Article
+		// 2.1扫描每一行的结果并赋值到一个 article 对象中
+		err := rows.Scan(&article.ID, &article.Title, &article.Body)
+		checkError(err)
+		// 2.2 将 article 追加到 articles 的这个数组中
+		articles = append(articles, article)
+	}
+
+	// 2.3 检查遍历 时发生的错误
+	err = rows.Err()
+	checkError(err)
+	// 加载模板
+	tmpl, err := template.ParseFiles("resource/views/articles/index.gohtml")
+	checkError(err)
+	err = tmpl.Execute(w, articles)
+	checkError(err)
 }
 
 // 文章创建页
