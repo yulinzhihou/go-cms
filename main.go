@@ -43,6 +43,18 @@ func initDB() {
 	checkError(err)
 }
 
+// 创建数据表
+func createTables() {
+	createArticlesSql := `CREATE TABLE IF NOT EXISTS articles (
+    	id bigint(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    	title VARCHAR(255) NOT NULL,
+    	body longtext NOT NULL COLLATE utf8mb4_general_ci NOT NULL
+	);`
+
+	_, err := db.Exec(createArticlesSql)
+	checkError(err)
+}
+
 // 记录错误日志
 func checkError(err error) {
 	if err != nil {
@@ -198,6 +210,7 @@ func removeTrailingSlash(next http.Handler) http.Handler {
 // 核心方法
 func main() {
 	initDB()
+	createTables()
 
 	router.StrictSlash(true)
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
