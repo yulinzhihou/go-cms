@@ -101,6 +101,13 @@ type ArticleFormData struct {
 	Errors map[string]string
 }
 
+// 文章结构
+type Article struct {
+	ID    int64
+	Title string
+	Body  string
+}
+
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<h1>Hello! 欢迎来到 go-cms</h1>")
 }
@@ -116,9 +123,34 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 
 // 文章详情
 func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
+	// 1。获取 URL 参数
 	vars := mux.Vars(r)
 	id := vars["id"]
 	fmt.Fprintf(w, "<h1>文章ID ： %s</h1>", id)
+	// 2。读取对应的文章数据
+	article := Article{}
+	query := `SELECT * FROM articles WHERE id=?`
+	err := db.QueryRow(query, id).Scan(&article.ID, &article.Title, &article.Body)
+
+	// 3.如果出现错误
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// 3.1 数据未找到
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, "<h1>文章未找到</h1>")
+		} else {
+			// 3.2 数据库有错误
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, "500服务器内部错误")
+		}
+	} else {
+		// 4。读取成功
+		tmpl, err := template.ParseFiles("resource/views/articles/show.gohtml")
+		checkError(err)
+		err = tmpl.Execute(w, article)
+		checkError(err)
+		fmt.Fprint(w, "读取成功，文章标题 -- "+article.Title)
+	}
 }
 
 // 文章列表页
