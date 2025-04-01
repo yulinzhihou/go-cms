@@ -248,13 +248,13 @@ func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		errors := make(map[string]string)
 		if title == "" {
 			errors["title"] = "标题不能为空"
-		} else if utf8.RuneCountInString(title) < 3 || utf8.RuneCountInString(body) > 10 {
+		} else if utf8.RuneCountInString(title) < 3 || utf8.RuneCountInString(title) > 10 {
 			errors["title"] = "标题长度需介于 3 ~ 10 字符之间 "
 		}
 
 		if body == "" {
 			errors["body"] = "内容不能为空"
-		} else if utf8.RuneCountInString(body) < 10 || utf8.RuneCountInString(title) > 20 {
+		} else if utf8.RuneCountInString(body) < 10 || utf8.RuneCountInString(body) > 20 {
 			errors["body"] = "内容长度需介于 10 ~ 20 字符之间"
 		}
 
